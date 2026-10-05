@@ -43,7 +43,10 @@ export default function MenuExplorer({
         onCategoryChange={setCategory}
       />
       {error && (
-        <p role="alert" className="mb-4 rounded-xl bg-red-100 px-4 py-2 text-red-800">
+        <p
+          role="alert"
+          className="mb-4 rounded-xl bg-red-100 px-4 py-2 text-red-800"
+        >
           {error}
         </p>
       )}

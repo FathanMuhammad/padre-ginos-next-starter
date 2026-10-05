@@ -6,7 +6,9 @@ export default function MenuPage() {
   return (
     <section>
       <h1 className="mb-6 text-3xl font-black">Menu</h1>
-      <Suspense fallback={<p className="py-16 text-center text-lg">Memuat menu…</p>}>
+      <Suspense
+        fallback={<p className="py-16 text-center text-lg">Memuat menu…</p>}
+      >
         <Menu />
       </Suspense>
     </section>
