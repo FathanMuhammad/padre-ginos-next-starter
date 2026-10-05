@@ -63,7 +63,7 @@ export default function PizzaDetail() {
         </div>
         <p className="text-lg">{pizza.description}</p>
         <SizePicker sizes={pizza.sizes} />
-        <RatingPanel pizzaId={pizza.id} />
+        {/* <RatingPanel pizzaId={pizza.id} /> */}
       </div>
     </article>
   );
