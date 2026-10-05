@@ -1,4 +1,4 @@
-"use client";
+"use client"; //menginfokan ke next, kita mau jalanin seluruh kodingan di browser.
 
 import { useEffect, useState } from "react";
 import MenuToolbar from "@/components/MenuToolbar";
