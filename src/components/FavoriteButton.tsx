@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useOptimistic, useState, useTransition } from "react";
+import { toggleFavoriteAction } from "@/app/actions";
 
 export default function FavoriteButton({
   pizzaId,
@@ -11,26 +12,42 @@ export default function FavoriteButton({
   pizzaName: string;
   favoriteIdsPromise: Promise<string[]>;
 }) {
-  const favoriteIds = use(favoriteIdsPromise);
-  const [isFavorite, setIsFavorite] = useState(favoriteIds.includes(pizzaId));
+  // The server's truth: streamed in, refreshed after every successful action
+  const isFavorite = use(favoriteIdsPromise).includes(pizzaId);
+  // What we show while the action is in flight
+  const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-  async function toggle() {
-    const res = await fetch(`/api/favorites/${pizzaId}`, { method: "POST" });
-    if (!res.ok) return;
-    const { isFavorite: next } = (await res.json()) as { isFavorite: boolean };
-    setIsFavorite(next);
-    window.dispatchEvent(new Event("favorites-changed"));
+  function handleClick() {
+    setError(null);
+    startTransition(async () => {
+      setOptimisticFavorite(!optimisticFavorite);
+      const result = await toggleFavoriteAction(pizzaId);
+      // On failure the transition ends, so the heart snaps back by itself
+      if (!result.ok) setError(result.error);
+    });
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => void toggle()}
-      aria-pressed={isFavorite}
-      aria-label={`${isFavorite ? "Hapus" : "Tambah"} ${pizzaName} ${isFavorite ? "dari" : "ke"} favorit`}
-      className="shrink-0 text-2xl leading-none text-brand"
-    >
-      {isFavorite ? "♥" : "♡"}
-    </button>
+    <div className="flex shrink-0 flex-col items-end">
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-pressed={optimisticFavorite}
+        aria-busy={isPending}
+        aria-label={`${optimisticFavorite ? "Hapus" : "Tambah"} ${pizzaName} ${optimisticFavorite ? "dari" : "ke"} favorit`}
+        className={`text-2xl leading-none text-brand transition-opacity ${
+          isPending ? "opacity-50" : ""
+        }`}
+      >
+        {optimisticFavorite ? "♥" : "♡"}
+      </button>
+      {error && (
+        <p role="alert" className="mt-1 max-w-32 text-right text-xs text-red-700">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
