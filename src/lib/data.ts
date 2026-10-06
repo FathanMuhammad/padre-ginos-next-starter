@@ -61,6 +61,15 @@ export async function getPizza(id: string): Promise<Pizza | null> {
   return toPizza(row, prices);
 }
 
+export async function getPizzaOfTheDay(): Promise<Pizza> {
+  "use cache";
+  cacheLife("days");
+  cacheTag("menu");
+  const pizzas = await getPizzas();
+  const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  return pizzas[day % pizzas.length];
+}
+
 export async function pizzaExists(id: string): Promise<boolean> {
   const row = await get<{ id: string }>(
     "SELECT pizza_type_id AS id FROM pizza_types WHERE pizza_type_id = ?",
